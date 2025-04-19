@@ -1,5 +1,5 @@
 import Sidebar from "./components/Sidebar";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import { VideoModal } from "./components/VideoModal";
 import GeneratePage from "./pages/GeneratePage";
 import VideosPage from "./pages/VideosPage";

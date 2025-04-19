@@ -1,8 +1,7 @@
-import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 // import { useMobile } from "@/hooks/use-mobile";
-import { PlusCircle, VideoIcon, Settings, X } from "lucide-react";
+import { PlusCircle, VideoIcon, Settings} from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function Sidebar() {

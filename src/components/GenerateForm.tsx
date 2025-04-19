@@ -11,13 +11,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { z } from "zod";
 
 const generateSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   content: z.string().min(10, "Content must be at least 10 characters"),
   type: z.enum(["script", "topic"]),
+  password: z.string()
 });
 
 type GenerateFormValues = z.infer<typeof generateSchema>;
@@ -28,10 +29,12 @@ interface GenerateFormProps {
 
 export function GenerateForm({ onGenerate }: GenerateFormProps) {
   const [generationMethod, setGenerationMethod] = useState<"script" | "topic">("topic");
+  // const [password,setPassword] = useState('')
   const [formValues, setFormValues] = useState<GenerateFormValues>({
     title: "",
     content: "",
-    type: "topic"
+    type: "topic",
+    password : ""
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   
@@ -60,6 +63,12 @@ export function GenerateForm({ onGenerate }: GenerateFormProps) {
   
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const password = prompt('Enter Password for Video Generation')
+    console.log('password',password)
+    setFormValues((prev)=>({
+      ...prev,
+      password : password || ''
+    }))
     if (validateForm()) {
       onGenerate(formValues);
     }
@@ -190,7 +199,28 @@ export function GenerateForm({ onGenerate }: GenerateFormProps) {
               />
         </Avatar>
             </div>
-          
+            
+            {/* <div className="flex justify-content align-center cursor-pointer">
+              <Label htmlFor="password" className="mb-1">Password</Label>
+              <Input
+          // type={showPassword ? "text" : "password"}
+          placeholder="Enter your password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="pr-10 w-52" // Add padding for the button
+        />
+           <Button 
+              type="submit" 
+              className="w-25 mt-2"
+              disabled={
+                (generationMethod === "script" && (!formValues.content || formValues.content.length < 10)) ||
+                (generationMethod === "topic" && !formValues.content)
+              }
+            >
+              Check Password
+            </Button>
+              </div> */}
+         
             <Button 
               type="submit" 
               className="w-full mt-2"

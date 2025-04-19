@@ -20,14 +20,13 @@ type Quiz = {
 
 export function VideoModal() {
   const { selectedVideo, setSelectedVideo } = useVideoContext();
-  const [isDownloading, setIsDownloading] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const [currentQuiz, setCurrentQuiz] = useState<Quiz | null>(null);
   const [answered, setAnswered] = useState(false);
   const [quizIndex, setQuizIndex] = useState(0);
 //   const { toast } = useToast();
-  console.log('selectedVideo',selectedVideo)
+  // console.log('selectedVideo',selectedVideo)
   // useEffect(() => {
   //   if (selectedVideo && videoRef.current) {
   //     console.log('insie first efect',videoRef.current)

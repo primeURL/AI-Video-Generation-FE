@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { GenerateForm } from "@/components/GenerateForm";
 import { GenerationStatus } from "@/components/GenerationStatus";
 // import { useToast } from "@/hooks/use-toast";
@@ -9,7 +8,6 @@ import { useVideoContext } from "@/lib/VideoContext";
 export default function GeneratePage() {
 
   const {isGenerating, setIsGenerating , progress, setProgress, status, setStatus} = useVideoContext()
-  const [isSubmitting, setIsSubmitting] = useState(false);
 //   const { toast } = useToast();
   const navigate = useNavigate()
 
@@ -17,9 +15,9 @@ export default function GeneratePage() {
     title: string;
     content: string;
     type: "script" | "topic";
+    password : string
   }) => {
     try {
-      setIsSubmitting(true);
       // let intervalId: NodeJS.Timeout;
       // intervalId = setInterval(checkVideoStatus, 2000);
       await ApiService.generateVideo(data);
@@ -36,10 +34,10 @@ export default function GeneratePage() {
     //     description: error instanceof Error ? error.message : "An unknown error occurred",
     //     variant: "destructive",
     //   });
-    console.log('err',error)
+      // console.log('err',error)
+      alert('Incorrect Password')
       setIsGenerating(false);
     } finally {
-      setIsSubmitting(false);
     }
   };
   
@@ -47,6 +45,7 @@ export default function GeneratePage() {
     title: string;
     content: string;
     type: "script" | "topic";
+    password : string
   }) => {
 
 

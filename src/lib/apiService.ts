@@ -17,6 +17,7 @@ export const ApiService = {
     title: string;
     content: string;
     type: "script" | "topic";
+    password : string
   }) => {
     console.log("Generating video with data:", data);
     // console.log("Backend URL:", process.env.VITE_BACKEND_URL);
