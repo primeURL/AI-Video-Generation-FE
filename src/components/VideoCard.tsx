@@ -14,13 +14,11 @@ import { Progress } from "@/components/ui/progress"
 export function VideoCard({ video, onPlay, progress }: any) {
 //   const { toast } = useToast();
   const [isDownloading, setIsDownloading] = useState(false);
-  const handleDownload = async (fileName:string) => {
+  const handleDownload = async (publicUrl:string,fileName:string) => {
     try {
       setIsDownloading(true);
       
-      const response = await axios.get(`${import.meta.env.VITE_R2_DEV_URL}/${fileName}.mp4`,
-        { responseType: 'blob' }
-      );
+      const response = await axios.get(publicUrl, { responseType: 'blob' }  );
       
       const blob = new Blob([response.data]);
       const url = window.URL.createObjectURL(blob);
@@ -96,7 +94,7 @@ export function VideoCard({ video, onPlay, progress }: any) {
             <Button 
               variant="ghost" 
               size="icon" 
-              onClick={()=>handleDownload(video.fileName)}
+              onClick={()=>handleDownload(video.publicUrl, video.fileName)}
               disabled={isDownloading}
             >
               <Download className="h-5 w-5 text-slate-500" />
