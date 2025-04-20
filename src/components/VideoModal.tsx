@@ -23,102 +23,72 @@ export function VideoModal() {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const [currentQuiz, setCurrentQuiz] = useState<Quiz | null>(null);
-  const [answered, setAnswered] = useState(false);
+  const [answered, setAnswered] = useState(true);
   const [quizIndex, setQuizIndex] = useState(0);
-//   const { toast } = useToast();
-  // console.log('selectedVideo',selectedVideo)
-  // useEffect(() => {
-  //   if (selectedVideo && videoRef.current) {
-  //     console.log('insie first efect',videoRef.current)
-  //     const handleLoadedMetadata = () => {
-  //       videoRef.current?.play().catch((error) => {
-  //         console.error("Autoplay error:", error);
-  //       });
-  //     };
-  
-  //     const videoElement = videoRef.current;
-  //     videoElement.addEventListener("loadedmetadata", handleLoadedMetadata);
-  //     setCurrentQuiz(selectedVideo.quiz)
-  //     return () => {
-  //       videoElement.removeEventListener("loadedmetadata", handleLoadedMetadata);
-  //       videoElement.pause();
-  //     };
-  //   }
-  // }, [selectedVideo]);
 
-  useEffect(() => {
-    if (!selectedVideo) return;
-  
-    const interval = setInterval(() => {
-      const video = videoRef.current;
-      if (video) {
-        console.log("✅ Video element is ready:", video);
-  
-        const onTimeUpdate = () => {
-          console.log("Current Time:", video.currentTime);
-          if (
-            quizIndex < selectedVideo.quiz.length &&
-            video.currentTime >= selectedVideo.quiz[quizIndex].timestamp &&
-            !answered
-          ) {
-            video.pause();
-            setCurrentQuiz(selectedVideo.quiz[quizIndex]);
-          }
-        };
-  
-        video.addEventListener("timeupdate", onTimeUpdate);
-  
-        clearInterval(interval); // Stop polling once video is ready
-  
-        // Cleanup
-        return () => {
-          video.removeEventListener("timeupdate", onTimeUpdate);
-        };
-      }
-    }, 100); // Check every 100ms
-  
-    return () => clearInterval(interval);
-  }, [quizIndex, answered, selectedVideo]);
-  
-    
 
-    // useEffect(() => {
-    //   if (!selectedVideo) return;
+    useEffect(() => {
+      if (!selectedVideo) return;
     
-    //   const interval = setInterval(() => {
-    //     const video = videoRef.current;
-    //     if (video) {
-    //       console.log("🎥 Video loaded:", video);
-    //       clearInterval(interval);
-    //     }
-    //   }, 100); // Retry every 100ms until videoRef is set
+      const interval = setTimeout(() => {
+        const video = videoRef.current;
+        if (video) {
+          console.log("✅ Video element is ready:", video);
+          console.log('selectedVideo.quiz[quizIndex].timestamp',selectedVideo.quiz[quizIndex].timestamp)
+          let myAnswer = true
+          const onTimeUpdate = () => {
+           
+            console.log("Current Time:", video.currentTime);
+            console.log(quizIndex,answered)
+            if (
+              quizIndex < selectedVideo.quiz.length &&
+              video.currentTime >= selectedVideo.quiz[quizIndex].timestamp
+              && myAnswer
+            ) {
+              video.pause();
+              setCurrentQuiz(selectedVideo.quiz[quizIndex]);
+              myAnswer = false
+            }
+          };
     
-    //   return () => clearInterval(interval);
-    // }, [selectedVideo]);
+          video.addEventListener("timeupdate", onTimeUpdate);
+    
+          clearInterval(interval); // Stop polling once video is ready
+    
+          // Cleanup
+          return () => {
+            video.removeEventListener("timeupdate", onTimeUpdate);
+          };
+        }
+      }, 400); // Check every 100ms
+    
+      return () => clearInterval(interval);
+    }, [quizIndex,answered,selectedVideo]);
+    
     
     const handleAnswer = (option: string) => {
       if (!currentQuiz) return;
-  
       const isCorrect = option === currentQuiz.correct;
       alert(isCorrect ? "✅ Correct!" : "❌ Incorrect!");
   
       setCurrentQuiz(null);
-      setAnswered(true);
+      setAnswered(false);
   
       setTimeout(() => {
         const video = videoRef.current;
         if (video) video.play();
-        setAnswered(false);
+        // setAnswered(false);
         setQuizIndex((i) => i + 1);
-      }, 500); // short delay before resuming
+      }, 50); // short delay before resuming
     };
 
   return (
+ 
     <Dialog 
       open={!!selectedVideo} 
       onOpenChange={(open) => !open && setSelectedVideo(null)}
     >
-      <DialogContent className="w-auto h-auto">
+      <DialogContent>
         {selectedVideo && (
           <>
             <DialogHeader>

@@ -2,7 +2,6 @@ import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 // import { useMobile } from "@/hooks/use-mobile";
 import { PlusCircle, VideoIcon, Settings} from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function Sidebar() {
   const location = useLocation();
@@ -59,19 +58,6 @@ export default function Sidebar() {
             Settings
           </button>
         </nav>
-      </div>
-      
-      <div className="p-4 border-t border-slate-200">
-        <div className="flex items-center">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src="" alt="User" />
-            <AvatarFallback>JD</AvatarFallback>
-          </Avatar>
-          <div className="ml-3">
-            <p className="text-sm font-medium text-slate-700">John Doe</p>
-            <p className="text-xs font-medium text-slate-500">john@example.com</p>
-          </div>
-        </div>
       </div>
     </div>
   );

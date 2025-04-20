@@ -14,13 +14,11 @@ import { Progress } from "@/components/ui/progress"
 export function VideoCard({ video, onPlay, progress }: any) {
 //   const { toast } = useToast();
   const [isDownloading, setIsDownloading] = useState(false);
-  // console.log('video',video)
-  const handleDownload = async () => {
+  const handleDownload = async (fileName:string) => {
     try {
       setIsDownloading(true);
       
-      const response = await axios.get(
-        `/api/videos/${video.id}/download`,
+      const response = await axios.get(`${import.meta.env.VITE_R2_DEV_URL}/${fileName}.mp4`,
         { responseType: 'blob' }
       );
       
@@ -28,7 +26,7 @@ export function VideoCard({ video, onPlay, progress }: any) {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${video.title}.mp4`;
+      a.download = `${fileName}.mp4`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -48,7 +46,6 @@ export function VideoCard({ video, onPlay, progress }: any) {
       setIsDownloading(false);
     }
   };
-  console.log('pr',progress)
   return (
     <Card className="hover:shadow-md transition-shadow py-0">
       <CardContent className="p-0">
@@ -94,12 +91,12 @@ export function VideoCard({ video, onPlay, progress }: any) {
           <p className="text-sm text-slate-500 mb-3">{formatDate(new Date(video.createdAt))}</p>
           <div className="flex items-center justify-between">
             <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-200">
-              {formatDuration(video.durationSeconds)}
+              Duration : {formatDuration(Number(video.videoDuration))}
             </Badge>
             <Button 
               variant="ghost" 
               size="icon" 
-              onClick={handleDownload}
+              onClick={()=>handleDownload(video.fileName)}
               disabled={isDownloading}
             >
               <Download className="h-5 w-5 text-slate-500" />
