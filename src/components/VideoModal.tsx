@@ -5,126 +5,146 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-// import { useVideoStore } from "@/hooks/use-video-store";
 import { useVideoContext } from "@/lib/VideoContext";
-// import { apiRequest } from "@/lib/queryClient";
-// import { useToast } from "@/hooks/use-toast";
 
 type Quiz = {
-  time: number; // time in seconds to trigger
+  timestamp: number;
   question: string;
   options: string[];
   correct: string;
 };
 
-
 export function VideoModal() {
   const { selectedVideo, setSelectedVideo } = useVideoContext();
   const videoRef = useRef<HTMLVideoElement>(null);
-
   const [currentQuiz, setCurrentQuiz] = useState<Quiz | null>(null);
-  const [answered, setAnswered] = useState(true);
   const [quizIndex, setQuizIndex] = useState(0);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const [videomount,setVideomount] = useState(false)
+  useEffect(() => {
 
+    if (!videoRef.current) {
+      console.log("Video ref is null");
+      return;
+    }
+    if (!selectedVideo) {
+      console.log("No selected video");
+      return;
+    }
 
-    useEffect(() => {
-      if (!selectedVideo) return;
-    
-      const interval = setTimeout(() => {
-        const video = videoRef.current;
-        if (video) {
-          console.log("✅ Video element is ready:", video);
-          console.log('selectedVideo.quiz[quizIndex].timestamp',selectedVideo.quiz[quizIndex].timestamp)
-          let myAnswer = true
-          const onTimeUpdate = () => {
-           
-            console.log("Current Time:", video.currentTime);
-            console.log(quizIndex,answered)
-            if (
-              quizIndex < selectedVideo.quiz.length &&
-              video.currentTime >= selectedVideo.quiz[quizIndex].timestamp
-              && myAnswer
-            ) {
-              video.pause();
-              setCurrentQuiz(selectedVideo.quiz[quizIndex]);
-              myAnswer = false
-            }
-          };
-    
-          video.addEventListener("timeupdate", onTimeUpdate);
-    
-          clearInterval(interval); // Stop polling once video is ready
-    
-          // Cleanup
-          return () => {
-            video.removeEventListener("timeupdate", onTimeUpdate);
-          };
-        }
-      }, 400); // Check every 100ms
-    
-      return () => clearInterval(interval);
-    }, [quizIndex,answered,selectedVideo]);
-    
-    
-    const handleAnswer = (option: string) => {
-      if (!currentQuiz) return;
-      const isCorrect = option === currentQuiz.correct;
-      alert(isCorrect ? "✅ Correct!" : "❌ Incorrect!");
-  
-      setCurrentQuiz(null);
-      setAnswered(false);
-  
-      setTimeout(() => {
-        const video = videoRef.current;
-        if (video) video.play();
-        // setAnswered(false);
-        setQuizIndex((i) => i + 1);
-      }, 50); // short delay before resuming
+    const video = videoRef.current;
+
+    if (!selectedVideo.quiz || selectedVideo.quiz.length === 0) {
+      console.warn("No quizzes available for this video");
+      return;
+    }
+
+    const onTimeUpdate = () => {
+      const currentTime = video.currentTime;
+      const quiz = selectedVideo.quiz[quizIndex];
+      if (
+        quizIndex < selectedVideo.quiz.length &&
+        currentTime >= quiz.timestamp &&
+        !currentQuiz
+      ) {
+        console.log("Triggering quiz:", quiz);
+        video.pause();
+        setCurrentQuiz(quiz);
+      }
     };
 
+    video.addEventListener("timeupdate", onTimeUpdate);
+   
+
+    return () => {
+      video.removeEventListener("timeupdate", onTimeUpdate);
+    };
+  }, [selectedVideo, quizIndex, currentQuiz, videomount]);
+
+  useEffect(()=>{
+    setTimeout(()=>{
+      setVideomount(true)
+    })
+  },[])
+
+  const handleCloseFeedback = () => {
+    setFeedback(null);
+  };
+  const handleAnswer = (option: string) => {
+    if (!currentQuiz) return;
+    const isCorrect = option === currentQuiz.correct;
+    setFeedback(isCorrect ? "✅ Correct!" : "❌ Incorrect!");
+    if (isCorrect) {
+      
+      setCurrentQuiz(null);
+      setQuizIndex((prev) => {
+        return prev + 1;
+      });
+      
+      setTimeout(() => {
+        setFeedback(null);
+        videoRef.current?.play();
+      }, 2000)
+    }
+  };
+
+  if (!selectedVideo) {
+    return <div>No video selected</div>;
+  }
+
   return (
- 
-    <Dialog 
-      open={!!selectedVideo} 
+    <Dialog
+      open={!!selectedVideo}
       onOpenChange={(open) => !open && setSelectedVideo(null)}
     >
       <DialogContent>
-        {selectedVideo && (
-          <>
-            <DialogHeader>
-              <DialogTitle>{selectedVideo.title}</DialogTitle>
-            </DialogHeader>
-            
-            <div className="mt-4 h-full w-full relative rounded-lg overflow-hidden aspect-video">
-              <video
-                ref={videoRef}
-                className="w-full h-full bg-black"
-                src={selectedVideo.publicUrl}
-                controls={true}
-              />
-             
-             {currentQuiz && (
-                  <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/40">
-                    <div className="p-6 bg-white rounded-lg shadow-xl w-[90%] max-w-xl">
-                      <h2 className="text-2xl font-bold mb-4 text-center">{currentQuiz.question}</h2>
-                      <div className="space-y-2">
-                        {currentQuiz.options.map((opt) => (
-                          <button
-                            key={opt}
-                            onClick={() => handleAnswer(opt)}
-                            className="w-full px-4 py-2 text-left bg-blue-100 hover:bg-blue-200 rounded-md"
-                          >
-                            {opt}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
+        <DialogHeader>
+          <DialogTitle>{selectedVideo.title}</DialogTitle>
+        </DialogHeader>
+        <div className="relative mt-4 aspect-video w-full overflow-hidden rounded-lg">
+          <video
+            ref={videoRef}
+            className="h-full w-full bg-black"
+            src={selectedVideo.publicUrl}
+            controls
+            onError={(e) => console.error("Video load error:", e)}
+          />
+          {currentQuiz && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40">
+              <div className="w-[90%] max-w-xl rounded-lg bg-white p-6 shadow-xl">
+                <h2 className="mb-4 text-center text-2xl font-bold">
+                  {currentQuiz.question}
+                </h2>
+                <div className="space-y-2">
+                  {currentQuiz.options.map((opt) => (
+                    <button
+                      key={opt}
+                      onClick={() => handleAnswer(opt)}
+                      className="w-full rounded-md bg-blue-100 px-4 py-2 text-left hover:bg-blue-200"
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
-           
-          </>
-        )}
+          )}
+          {feedback && (
+                <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/60">
+                  <div className="relative flex flex-col items-center">
+                    <span className="text-3xl font-bold text-white">{feedback}</span>
+                    {feedback.includes("Incorrect") && (
+                      <button
+                        onClick={handleCloseFeedback}
+                        className="mt-4 rounded-md bg-red-500 px-4 py-2 text-white hover:bg-red-600"
+                      >
+                        Try Again
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+        </div>
       </DialogContent>
     </Dialog>
   );
