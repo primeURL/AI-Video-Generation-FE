@@ -3,10 +3,11 @@ import { Route, Routes } from "react-router-dom";
 import { VideoModal } from "./components/VideoModal";
 import GeneratePage from "./pages/GeneratePage";
 import VideosPage from "./pages/VideosPage";
+import { useVideoContext } from "./lib/VideoContext";
 
 
 export default function App() {
-
+  const { selectedVideo } = useVideoContext();
   return (
     <div className="flex h-screen overflow-hidden">
       <Sidebar />
@@ -21,7 +22,8 @@ export default function App() {
           </div>
         </main>
       </div>
-      <VideoModal />
+      {selectedVideo && <VideoModal /> }
+     
     </div>
   );
 }
