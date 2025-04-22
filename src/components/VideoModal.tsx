@@ -104,7 +104,7 @@ export function VideoModal() {
         <div className="relative mt-4 aspect-video w-full overflow-hidden rounded-lg">
           <video
             ref={videoRef}
-            className="h-full w-full bg-black"
+            className={`h-full w-full bg-black ${currentQuiz ? "blur-xs" : ""}`}
             src={selectedVideo.publicUrl}
             controls
             onError={(e) => console.error("Video load error:", e)}
