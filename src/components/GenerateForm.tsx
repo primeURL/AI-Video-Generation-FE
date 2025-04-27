@@ -61,16 +61,28 @@ export function GenerateForm({ onGenerate }: GenerateFormProps) {
   //   setFormValues(prev => ({ ...prev, [name]: value }));
   // };
   
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const password = prompt('Enter Password for Video Generation')
     console.log('password',password)
-    setFormValues((prev)=>({
-      ...prev,
-      password : password || ''
-    }))
+    if (!password) {
+      alert('Password is required');
+      return;
+    }
+    const newFormValues = await new Promise<GenerateFormValues>((resolve)=>{
+      setFormValues((prev)=>{
+        const newValues = {
+          ...prev,
+          password : password
+        }
+        resolve(newValues)
+        return newValues
+      })
+    })
+  
+
     if (validateForm()) {
-      onGenerate(formValues);
+      onGenerate(newFormValues);
     }
   };
   

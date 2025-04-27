@@ -5,6 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button"; // Shadcn Button component
 import { useVideoContext } from "@/lib/VideoContext";
 
 type Quiz = {
@@ -20,9 +21,11 @@ export function VideoModal() {
   const [currentQuiz, setCurrentQuiz] = useState<Quiz | null>(null);
   const [quizIndex, setQuizIndex] = useState(0);
   const [feedback, setFeedback] = useState<string | null>(null);
-  const [videomount,setVideomount] = useState(false)
-  useEffect(() => {
+  const [videomount, setVideomount] = useState(false);
+  const [isQuizVisible, setIsQuizVisible] = useState(false);
+  const [isQuizEntering, setIsQuizEntering] = useState(true);
 
+  useEffect(() => {
     if (!videoRef.current) {
       console.log("Video ref is null");
       return;
@@ -50,41 +53,43 @@ export function VideoModal() {
         console.log("Triggering quiz:", quiz);
         video.pause();
         setCurrentQuiz(quiz);
+        setIsQuizVisible(true);
+        setIsQuizEntering(true);
       }
     };
 
     video.addEventListener("timeupdate", onTimeUpdate);
-   
 
     return () => {
       video.removeEventListener("timeupdate", onTimeUpdate);
     };
   }, [selectedVideo, quizIndex, currentQuiz, videomount]);
 
-  useEffect(()=>{
-    setTimeout(()=>{
-      setVideomount(true)
-    })
-  },[])
+  useEffect(() => {
+    setTimeout(() => {
+      setVideomount(true);
+    });
+  }, []);
 
   const handleCloseFeedback = () => {
     setFeedback(null);
   };
+
   const handleAnswer = (option: string) => {
     if (!currentQuiz) return;
     const isCorrect = option === currentQuiz.correct;
     setFeedback(isCorrect ? "✅ Correct!" : "❌ Incorrect!");
     if (isCorrect) {
-      
-      setCurrentQuiz(null);
-      setQuizIndex((prev) => {
-        return prev + 1;
-      });
-      
+      setIsQuizEntering(false);
       setTimeout(() => {
+        setCurrentQuiz(null);
+        setIsQuizVisible(false);
+        setQuizIndex((prev) => {
+          return prev + 1;
+        });
         setFeedback(null);
         videoRef.current?.play();
-      }, 2000)
+      }, 1500);
     }
   };
 
@@ -104,46 +109,60 @@ export function VideoModal() {
         <div className="relative mt-4 aspect-video w-full overflow-hidden rounded-lg">
           <video
             ref={videoRef}
-            className={`h-full w-full bg-black ${currentQuiz ? "blur-xs" : ""}`}
+            className={`h-full w-full bg-black transition-all duration-300 ${
+              currentQuiz || feedback ? "blur-xs" : ""
+            }`}
             src={selectedVideo.publicUrl}
             controls
             onError={(e) => console.error("Video load error:", e)}
           />
-          {currentQuiz && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40">
-              <div className="w-[90%] max-w-xl rounded-lg bg-white p-6 shadow-xl">
-                <h2 className="mb-4 text-center text-2xl font-bold">
-                  {currentQuiz.question}
+          {isQuizVisible && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/30">
+              <div
+                className={`w-[70%] max-w-lg rounded-lg bg-background p-6 shadow-sm border border-border transition-all duration-300 transform ${
+                  isQuizEntering
+                    ? "opacity-100 translate-y-0 scale-100"
+                    : "opacity-0 translate-y-4 scale-95"
+                }`}
+              >
+                <h2 className="mb-4 text-center text-xl font-semibold text-foreground">
+                  {currentQuiz?.question}
+                  <span className="block text-sm text-muted-foreground mt-1">
+                    Quiz {quizIndex + 1} of {selectedVideo.quiz.length}
+                  </span>
                 </h2>
-                <div className="space-y-2">
-                  {currentQuiz.options.map((opt) => (
-                    <button
+                <div className="space-y-3">
+                  {currentQuiz?.options.map((opt, index) => (
+                    <Button
                       key={opt}
                       onClick={() => handleAnswer(opt)}
-                      className="w-full rounded-md bg-blue-100 px-4 py-2 text-left hover:bg-blue-200"
+                      variant="default"
+                      className="w-full py-2  bg-blue-100 hover:bg-blue-400 text-black transition-all duration-200 hover:scale-102 shadow-sm animate-fade-in"
+                      style={{ animationDelay: `${index * 100}ms` }}
                     >
                       {opt}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>
             </div>
           )}
           {feedback && (
-                <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/60">
-                  <div className="relative flex flex-col items-center">
-                    <span className="text-3xl font-bold text-white">{feedback}</span>
-                    {feedback.includes("Incorrect") && (
-                      <button
-                        onClick={handleCloseFeedback}
-                        className="mt-4 rounded-md bg-red-500 px-4 py-2 text-white hover:bg-red-600"
-                      >
-                        Try Again
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/60">
+              <div className="relative flex flex-col items-center">
+                <span className="text-2xl font-bold text-white">{feedback}</span>
+                {feedback.includes("Incorrect") && (
+                  <Button
+                    onClick={handleCloseFeedback}
+                    variant="destructive"
+                    className="mt-4"
+                  >
+                    Try Again
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
